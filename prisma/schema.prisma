@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Location {
+  id        Int      @id @default(autoincrement())
+  latitude  Float
+  longitude Float
+  address   Address?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Address {
+  id                Int      @id @default(autoincrement())
+  formatted_address String
+  route_name        String
+  route_type        String
+  neighbourhood     String?
+  city              String
+  state             String
+  place             String?
+  municipality_zone String?
+  in_traffic_zone   Boolean
+  in_odd_even_zone  Boolean
+  village           String?
+  county            String
+  district          String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  locationId Int?      @unique
+  location   Location? @relation(fields: [locationId], references: [id])
+}

@@ -1,20 +1,63 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 
 import mapboxgl from "@neshan-maps-platform/mapbox-gl";
 import "@neshan-maps-platform/mapbox-gl/dist/NeshanMapboxGl.css";
 
 import ThemeSwitch from "./Themeswitch";
+import { LocationWithAddress } from "@/interfaces/api-responses.interface";
+import {
+  deleteLocation,
+  getAllLocations,
+  saveNewlocation,
+} from "@/actions/location.action";
 
 const Map = () => {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
   const mapRef = useRef<mapboxgl.Map>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
+
+  const [locations, setLocations] = useState<LocationWithAddress[]>([]);
 
   const isDarkMode = theme === "dark";
+
+  const deleteHandler = async (id: number) => {
+    console.log({ locations });
+    const location = locations.find((location) => location.id === id);
+    if (!location) {
+      return;
+    }
+
+    await deleteLocation(id);
+    setLocations((prevLocations) =>
+      prevLocations.filter((location) => location.id !== id)
+    );
+  };
+
+  const handleMapClick = useCallback(
+    async (event: mapboxgl.MapMouseEvent & mapboxgl.EventData) => {
+      if (mapRef.current) {
+        // Get the clicked coordinates
+        const { lng, lat } = event.lngLat;
+        // Create a new marker
+        const newMarker = new mapboxgl.Marker()
+          .setLngLat([lng, lat])
+          .addTo(mapRef.current);
+        newMarker.getElement().addEventListener("click", (event) => {
+          // Prevent map click event from firing
+          event.stopPropagation();
+        });
+
+        const newLocation = await saveNewlocation({ lat, lng });
+
+        setLocations((prevLocations) => [...prevLocations, newLocation]);
+        // Update the state to include the new marker
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     const neshanMap = mapRef.current;
@@ -24,7 +67,7 @@ const Map = () => {
         mapType: isDarkMode
           ? mapboxgl.Map.mapTypes.neshanVectorNight
           : mapboxgl.Map.mapTypes.neshanVector,
-        mapKey: process.env.NEXT_PUBLIC_NESHAN_KEY as string,
+        mapKey: process.env.NEXT_PUBLIC_NESHAN_MAP_KEY as string,
         zoom: 11,
         pitch: 0,
         center: [51.389, 35.6892],
@@ -40,43 +83,39 @@ const Map = () => {
         },
       }) as unknown as mapboxgl.Map;
       mapRef.current.on("click", handleMapClick);
+
+      mapRef.current.on("load", async () => {
+        const data = await getAllLocations();
+        setLocations(data);
+
+        const markers = [];
+        for (const location of data) {
+          const mark = new mapboxgl.Marker()
+            .setLngLat([location.longitude, location.latitude])
+            .addTo(mapRef.current as mapboxgl.Map);
+
+          mark.getElement().addEventListener("click", (event) => {
+            // Prevent map click event from firing
+            event.stopPropagation();
+          });
+
+          markers.push(mark);
+        }
+      });
     }
     return () => neshanMap?.remove();
-  }, [isDarkMode, mounted]);
+  }, [isDarkMode, mounted, handleMapClick]);
 
   useEffect(() => setMounted(true), []);
 
   const toggleDarkMode = () => {
     setTheme(isDarkMode ? "light" : "dark");
 
-    setTimeout(() => {
-      markers.forEach((markerData) => {
-        markerData.addTo(mapRef.current as mapboxgl.Map);
-      });
-    }, 1000);
-  };
-
-  const handleMapClick = (
-    event: mapboxgl.MapMouseEvent & mapboxgl.EventData
-  ) => {
-    if (mapRef.current) {
-      // Get the clicked coordinates
-      const { lng, lat } = event.lngLat;
-      // Create a new marker
-      const newMarker = new mapboxgl.Marker()
-        .setLngLat([lng, lat])
-        .addTo(mapRef.current);
-      newMarker.getElement().addEventListener("click", (event) => {
-        // Prevent map click event from firing
-        event.stopPropagation();
-        newMarker.remove();
-        setMarkers((currentMarkers) =>
-          currentMarkers.filter((m) => m !== newMarker)
-        );
-      });
-      // Update the state to include the new marker
-      setMarkers((prevMarkers) => [...prevMarkers, newMarker]);
-    }
+    // setTimeout(() => {
+    //   markers.forEach((markerData) => {
+    //     markerData.addTo(mapRef.current as mapboxgl.Map);
+    //   });
+    // }, 1000);
   };
 
   if (!mounted) {
@@ -98,14 +137,13 @@ const Map = () => {
               <ThemeSwitch />
             </button>
           </div>
-          {markers.length === 0 ? (
+          {locations.length === 0 ? (
             <p className="text-gray-600 dark:text-gray-400">
-              No markers added. Click on the map to add a marker.
+              هیچ مکانی انتخاب نشده است
             </p>
           ) : (
             <ul>
-              {markers.map((marker, index) => {
-                const { lng, lat } = marker.getLngLat();
+              {locations.map((location, index) => {
                 return (
                   <li
                     key={index}
@@ -113,19 +151,10 @@ const Map = () => {
                   >
                     <div className="flex justify-between items-center">
                       <span>
-                        Marker {index + 1}: ({lng.toFixed(4)}, {lat.toFixed(4)})
+                        {location.address?.formatted_address || "ادرس یافت نشد"}
                       </span>
                       <button
-                        onClick={() => {
-                          if (
-                            window.confirm("Do you want to remove this marker?")
-                          ) {
-                            marker.remove();
-                            setMarkers((currentMarkers) =>
-                              currentMarkers.filter((m) => m !== marker)
-                            );
-                          }
-                        }}
+                        onClick={() => deleteHandler(location.id)}
                         className="text-red-500 hover:text-red-700 focus:outline-none"
                         title="Remove Marker"
                       >
