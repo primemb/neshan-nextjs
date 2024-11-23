@@ -6,35 +6,19 @@ import mapboxgl from "@neshan-maps-platform/mapbox-gl";
 import "@neshan-maps-platform/mapbox-gl/dist/NeshanMapboxGl.css";
 
 import ThemeSwitch from "./Themeswitch";
-import { LocationWithAddress } from "@/interfaces/api-responses.interface";
-import {
-  deleteLocation,
-  getAllLocations,
-  saveNewlocation,
-} from "@/actions/location.action";
+import useLocation from "@/hooks/useLocation";
 
 const Map = () => {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
   const mapRef = useRef<mapboxgl.Map>();
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const markerRef = useRef<Record<number, mapboxgl.Marker>>({});
 
-  const [locations, setLocations] = useState<LocationWithAddress[]>([]);
+  const { locations, getLocations, addLocation, removeLocation } =
+    useLocation();
 
   const isDarkMode = theme === "dark";
-
-  const deleteHandler = async (id: number) => {
-    console.log({ locations });
-    const location = locations.find((location) => location.id === id);
-    if (!location) {
-      return;
-    }
-
-    await deleteLocation(id);
-    setLocations((prevLocations) =>
-      prevLocations.filter((location) => location.id !== id)
-    );
-  };
 
   const handleMapClick = useCallback(
     async (event: mapboxgl.MapMouseEvent & mapboxgl.EventData) => {
@@ -45,19 +29,40 @@ const Map = () => {
         const newMarker = new mapboxgl.Marker()
           .setLngLat([lng, lat])
           .addTo(mapRef.current);
+        const newLocation = await addLocation({ lat, lng });
+        markerRef.current[newLocation.id] = newMarker;
         newMarker.getElement().addEventListener("click", (event) => {
           // Prevent map click event from firing
           event.stopPropagation();
+          newMarker.remove();
+          removeLocation(newLocation.id);
         });
 
-        const newLocation = await saveNewlocation({ lat, lng });
-
-        setLocations((prevLocations) => [...prevLocations, newLocation]);
         // Update the state to include the new marker
       }
     },
-    []
+    [addLocation, removeLocation]
   );
+
+  useEffect(() => {
+    if (mapRef.current) {
+      for (const location of locations) {
+        if (!markerRef.current[location.id]) {
+          const mark = new mapboxgl.Marker()
+            .setLngLat([location.longitude, location.latitude])
+            .addTo(mapRef.current as mapboxgl.Map);
+
+          markerRef.current[location.id] = mark;
+          mark.getElement().addEventListener("click", (event) => {
+            // Prevent map click event from firing
+            event.stopPropagation();
+            mark.remove();
+            removeLocation(location.id);
+          });
+        }
+      }
+    }
+  }, [locations, mapRef, removeLocation]);
 
   useEffect(() => {
     const neshanMap = mapRef.current;
@@ -83,39 +88,17 @@ const Map = () => {
         },
       }) as unknown as mapboxgl.Map;
       mapRef.current.on("click", handleMapClick);
-
-      mapRef.current.on("load", async () => {
-        const data = await getAllLocations();
-        setLocations(data);
-
-        const markers = [];
-        for (const location of data) {
-          const mark = new mapboxgl.Marker()
-            .setLngLat([location.longitude, location.latitude])
-            .addTo(mapRef.current as mapboxgl.Map);
-
-          mark.getElement().addEventListener("click", (event) => {
-            // Prevent map click event from firing
-            event.stopPropagation();
-          });
-
-          markers.push(mark);
-        }
+      mapRef.current.on("load", () => {
+        getLocations();
       });
     }
     return () => neshanMap?.remove();
-  }, [isDarkMode, mounted, handleMapClick]);
+  }, [isDarkMode, mounted, handleMapClick, getLocations]);
 
   useEffect(() => setMounted(true), []);
 
   const toggleDarkMode = () => {
     setTheme(isDarkMode ? "light" : "dark");
-
-    // setTimeout(() => {
-    //   markers.forEach((markerData) => {
-    //     markerData.addTo(mapRef.current as mapboxgl.Map);
-    //   });
-    // }, 1000);
   };
 
   if (!mounted) {
@@ -154,7 +137,7 @@ const Map = () => {
                         {location.address?.formatted_address || "ادرس یافت نشد"}
                       </span>
                       <button
-                        onClick={() => deleteHandler(location.id)}
+                        onClick={() => removeLocation(location.id)}
                         className="text-red-500 hover:text-red-700 focus:outline-none"
                         title="Remove Marker"
                       >

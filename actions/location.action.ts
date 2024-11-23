@@ -1,15 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use server";
 
 import {
   ILocationToAddress,
   LocationWithAddress,
 } from "@/interfaces/api-responses.interface";
+import { IGetAddressFromLocationParams } from "@/interfaces/location.interface";
 import prisma from "@/libs/prisma";
-
-interface IGetAddressFromLocationParams {
-  lat: number;
-  lng: number;
-}
 
 export const saveNewlocation = async ({
   lat,
@@ -54,7 +51,6 @@ export const saveNewlocation = async ({
     });
     return location;
   } catch (error) {
-    console.error(error);
     throw new Error("Error while saving location");
   }
 };
@@ -68,20 +64,21 @@ export const getAllLocations = async () => {
     });
     return locations;
   } catch (error) {
-    console.error(error);
     throw new Error("Error while fetching locations");
   }
 };
 
 export const deleteLocation = async (id: number) => {
   try {
+    const exist = await prisma.location.findUnique({ where: { id } });
+    if (!exist) return;
     await prisma.location.delete({
       where: {
         id,
       },
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     throw new Error("Error while deleting location");
   }
 };
