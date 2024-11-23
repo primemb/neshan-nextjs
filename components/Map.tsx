@@ -26,10 +26,11 @@ const Map = () => {
         // Get the clicked coordinates
         const { lng, lat } = event.lngLat;
         // Create a new marker
+        const newLocation = await addLocation({ lat, lng });
         const newMarker = new mapboxgl.Marker()
           .setLngLat([lng, lat])
           .addTo(mapRef.current);
-        const newLocation = await addLocation({ lat, lng });
+
         markerRef.current[newLocation.id] = newMarker;
         newMarker.getElement().addEventListener("click", (event) => {
           // Prevent map click event from firing
@@ -78,7 +79,7 @@ const Map = () => {
         center: [51.389, 35.6892],
         minZoom: 2,
         maxZoom: 21,
-        trackResize: true,
+        trackResize: false,
         poi: true,
         traffic: false,
 
@@ -98,7 +99,10 @@ const Map = () => {
   useEffect(() => setMounted(true), []);
 
   const toggleDarkMode = () => {
+    markerRef.current = {};
     setTheme(isDarkMode ? "light" : "dark");
+
+    // mapRef.current?.remove();
   };
 
   if (!mounted) {

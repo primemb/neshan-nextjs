@@ -22,7 +22,7 @@ model Address {
   route_name        String
   route_type        String
   neighbourhood     String?
-  city              String
+  city              String?
   state             String
   place             String?
   municipality_zone String?

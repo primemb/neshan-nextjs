@@ -23,6 +23,7 @@ export const saveNewlocation = async ({
       }
     );
     const data = (await response.json()) as ILocationToAddress;
+    console.log({ data });
     const location: LocationWithAddress = await prisma.location.create({
       data: {
         latitude: lat,
