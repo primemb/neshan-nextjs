@@ -7,6 +7,8 @@ import "@neshan-maps-platform/mapbox-gl/dist/NeshanMapboxGl.css";
 
 import ThemeSwitch from "./Themeswitch";
 import useLocation from "@/hooks/useLocation";
+import AddAddressInput from "./AddAddressInput";
+import { toast } from "react-toastify";
 
 const Map = () => {
   const [mounted, setMounted] = useState(false);
@@ -15,10 +17,32 @@ const Map = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<Record<number, mapboxgl.Marker>>({});
 
-  const { locations, getLocations, addLocation, removeLocation } =
-    useLocation();
+  const {
+    locations,
+    getLocations,
+    addLocation,
+    addLocationFromAddress,
+    removeLocation,
+  } = useLocation();
 
   const isDarkMode = theme === "dark";
+
+  const addNewAddressHandler = async (address: string) => {
+    const newLocation = await addLocationFromAddress(address);
+    if ("error" in newLocation) {
+      toast.error(newLocation.error);
+    } else {
+      const newMarker = new mapboxgl.Marker()
+        .setLngLat([newLocation.longitude, newLocation.latitude])
+        .addTo(mapRef.current!);
+      markerRef.current[newLocation.id] = newMarker;
+      newMarker.getElement().addEventListener("click", (event) => {
+        event.stopPropagation();
+        newMarker.remove();
+        removeLocation(newLocation.id);
+      });
+    }
+  };
 
   const handleMapClick = useCallback(
     async (event: mapboxgl.MapMouseEvent & mapboxgl.EventData) => {
@@ -79,7 +103,7 @@ const Map = () => {
         center: [51.389, 35.6892],
         minZoom: 2,
         maxZoom: 21,
-        trackResize: false,
+        trackResize: true,
         poi: true,
         traffic: false,
 
@@ -115,7 +139,7 @@ const Map = () => {
         {/* Sidebar */}
         <div className="w-1/4 p-4 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 overflow-auto">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Markers List</h2>
+            <h2 className="text-2xl font-bold">لیست آدرس ها</h2>
             <button
               onClick={toggleDarkMode}
               className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 focus:outline-none"
@@ -124,6 +148,7 @@ const Map = () => {
               <ThemeSwitch />
             </button>
           </div>
+          <AddAddressInput onSumbit={addNewAddressHandler} />
           {locations.length === 0 ? (
             <p className="text-gray-600 dark:text-gray-400">
               هیچ مکانی انتخاب نشده است
@@ -141,7 +166,12 @@ const Map = () => {
                         {location.address?.formatted_address || "ادرس یافت نشد"}
                       </span>
                       <button
-                        onClick={() => removeLocation(location.id)}
+                        onClick={() => {
+                          if (markerRef.current[location.id]) {
+                            markerRef.current[location.id].remove();
+                          }
+                          removeLocation(location.id);
+                        }}
                         className="text-red-500 hover:text-red-700 focus:outline-none"
                         title="Remove Marker"
                       >

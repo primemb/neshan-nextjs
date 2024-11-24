@@ -17,4 +17,12 @@ export interface ILocationToAddress {
   district: string;
 }
 
+export interface IAdrressToLocation {
+  status: string;
+  location: {
+    x: number;
+    y: number;
+  };
+}
+
 export type LocationWithAddress = Location & { address?: Address | null };

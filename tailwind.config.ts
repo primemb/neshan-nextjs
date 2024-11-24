@@ -13,6 +13,9 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      fontFamily: {
+        iran: ["var(--font-iran)", "sans-serif"],
+      },
     },
   },
   plugins: [],

@@ -1,29 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use server";
 
-import {
-  ILocationToAddress,
-  LocationWithAddress,
-} from "@/interfaces/api-responses.interface";
+import { LocationWithAddress } from "@/interfaces/api-responses.interface";
 import { IGetAddressFromLocationParams } from "@/interfaces/location.interface";
+import { addressToGeocoding, geocodingToAddress } from "@/libs/neshan";
 import prisma from "@/libs/prisma";
 
-export const saveNewlocation = async ({
+export const saveNewlocationAction = async ({
   lat,
   lng,
 }: IGetAddressFromLocationParams) => {
   try {
-    const response = await fetch(
-      `${process.env.NESHAN_API_URL}reverse?lat=${lat}&lng=${lng}`,
-      {
-        headers: {
-          "Api-Key": process.env.NESHAN_API_KEY as string,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    const data = (await response.json()) as ILocationToAddress;
-    console.log({ data });
+    const data = await geocodingToAddress({ lat, lng });
     const location: LocationWithAddress = await prisma.location.create({
       data: {
         latitude: lat,
@@ -56,7 +44,7 @@ export const saveNewlocation = async ({
   }
 };
 
-export const getAllLocations = async () => {
+export const getAllLocationsAction = async () => {
   try {
     const locations: LocationWithAddress[] = await prisma.location.findMany({
       include: {
@@ -69,7 +57,7 @@ export const getAllLocations = async () => {
   }
 };
 
-export const deleteLocation = async (id: number) => {
+export const deleteLocationAction = async (id: number) => {
   try {
     const exist = await prisma.location.findUnique({ where: { id } });
     if (!exist) return;
@@ -81,5 +69,26 @@ export const deleteLocation = async (id: number) => {
   } catch (error) {
     console.log(error);
     throw new Error("Error while deleting location");
+  }
+};
+
+export const addLocationFromAddressAction = async (
+  address: string
+): Promise<LocationWithAddress | { error: string }> => {
+  if (!address) return { error: "آدرس نمی تواند خالی باشد" };
+
+  try {
+    const data = await addressToGeocoding(address);
+
+    if (data.status !== "OK") {
+      return { error: "آدرس مورد نظر یافت نشد" };
+    }
+
+    return await saveNewlocationAction({
+      lat: data.location.y,
+      lng: data.location.x,
+    });
+  } catch (error) {
+    return { error: "مشکلی پیش آمد مجدد امتحان کنید" };
   }
 };

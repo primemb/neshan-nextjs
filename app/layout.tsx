@@ -1,16 +1,20 @@
 import localFont from "next/font/local";
-import "./globals.css";
 import { Providers } from "@/components/ThemeProvider";
+import "./globals.css";
+import "react-toastify/dist/ReactToastify.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+const IranYekan = localFont({
+  src: [
+    {
+      path: "./fonts/IranyekanRegular.woff",
+      weight: "100 500",
+    },
+    {
+      path: "./fonts/IranyekanBold.woff",
+      weight: "600 900",
+    },
+  ],
+  variable: "--font-iran",
 });
 
 export default function RootLayout({
@@ -21,7 +25,7 @@ export default function RootLayout({
   return (
     <html dir="rtl" lang="en" suppressHydrationWarning>
       <body
-        className={`w-full h-full ${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`w-full h-full ${IranYekan.variable} font-iran antialiased`}
       >
         <Providers>{children}</Providers>
       </body>
