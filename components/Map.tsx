@@ -23,6 +23,7 @@ const Map = () => {
     addLocation,
     addLocationFromAddress,
     removeLocation,
+    drawDirection,
   } = useLocation();
 
   const isDarkMode = theme === "dark";
@@ -68,6 +69,17 @@ const Map = () => {
     },
     [addLocation, removeLocation]
   );
+
+  const handleDirection = async () => {
+    const response = await drawDirection(
+      locations.map((location) => ({
+        lat: location.latitude,
+        lng: location.longitude,
+      }))
+    );
+
+    console.log(response);
+  };
 
   useEffect(() => {
     if (mapRef.current) {
@@ -183,6 +195,7 @@ const Map = () => {
               })}
             </ul>
           )}
+          <button onClick={handleDirection}>Test</button>
         </div>
         {/* Map Container */}
         <div className="w-3/4">

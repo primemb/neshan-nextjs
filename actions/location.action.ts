@@ -3,7 +3,7 @@
 
 import { LocationWithAddress } from "@/interfaces/api-responses.interface";
 import { IGetAddressFromLocationParams } from "@/interfaces/location.interface";
-import { addressToGeocoding, geocodingToAddress } from "@/libs/neshan";
+import { addressToGeocoding, geocodingToAddress, tspApi } from "@/libs/neshan";
 import prisma from "@/libs/prisma";
 
 export const saveNewlocationAction = async ({
@@ -91,4 +91,13 @@ export const addLocationFromAddressAction = async (
   } catch (error) {
     return { error: "مشکلی پیش آمد مجدد امتحان کنید" };
   }
+};
+
+export const drawLocationAction = async (
+  locations: { lat: number; lng: number }[]
+) => {
+  return await tspApi({
+    waypoints: locations,
+    sourceIsAnyPoint: false,
+  });
 };

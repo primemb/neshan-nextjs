@@ -32,7 +32,7 @@ const AddAddressInput = ({ onSumbit }: IAddressInputProps) => {
         type="submit"
         onClick={handleSubmit}
         disabled={loading}
-        className="p-2 rounded bg-blue-500 text-white dark:bg-blue-700 dark:text-gray-200 focus:outline-none disabled:opacity-50"
+        className="py-2 px-4 text-sm rounded bg-blue-500 text-white dark:bg-blue-700 dark:text-gray-200 focus:outline-none disabled:opacity-50"
       >
         {loading ? "در حال ارسال" : "افزودن"}
       </button>

@@ -25,4 +25,9 @@ export interface IAdrressToLocation {
   };
 }
 
+export interface ITSPApiParams {
+  waypoints: { lat: number; lng: number }[];
+  sourceIsAnyPoint: boolean;
+}
+
 export type LocationWithAddress = Location & { address?: Address | null };

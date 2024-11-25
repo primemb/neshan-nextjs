@@ -3,11 +3,13 @@
 import {
   addLocationFromAddressAction,
   deleteLocationAction,
+  drawLocationAction,
   getAllLocationsAction,
   saveNewlocationAction,
 } from "@/actions/location.action";
 import { LocationWithAddress } from "@/interfaces/api-responses.interface";
 import { IGetAddressFromLocationParams } from "@/interfaces/location.interface";
+import { tspApi } from "@/libs/neshan";
 import { useCallback, useState } from "react";
 
 const useLocation = () => {
@@ -42,12 +44,20 @@ const useLocation = () => {
     await deleteLocationAction(id);
   }, []);
 
+  const drawDirection = useCallback(
+    async (locations: { lat: number; lng: number }[]) => {
+      return drawLocationAction(locations);
+    },
+    []
+  );
+
   return {
     locations,
     addLocation,
     addLocationFromAddress,
     removeLocation,
     getLocations,
+    drawDirection,
   };
 };
 
