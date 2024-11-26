@@ -3,7 +3,12 @@
 
 import { LocationWithAddress } from "@/interfaces/api-responses.interface";
 import { IGetAddressFromLocationParams } from "@/interfaces/location.interface";
-import { addressToGeocoding, geocodingToAddress, tspApi } from "@/libs/neshan";
+import {
+  addressToGeocoding,
+  directionApi,
+  geocodingToAddress,
+  tspApi,
+} from "@/libs/neshan";
 import prisma from "@/libs/prisma";
 
 export const saveNewlocationAction = async ({
@@ -96,8 +101,34 @@ export const addLocationFromAddressAction = async (
 export const drawLocationAction = async (
   locations: { lat: number; lng: number }[]
 ) => {
-  return await tspApi({
+  const tspLocations = await tspApi({
     waypoints: locations,
     sourceIsAnyPoint: false,
   });
+
+  const origin = {
+    lat: tspLocations.points[0].location[0],
+    lng: tspLocations.points[0].location[1],
+  };
+
+  const destination = {
+    lat: tspLocations.points[tspLocations.points.length - 1].location[0],
+    lng: tspLocations.points[tspLocations.points.length - 1].location[1],
+  };
+
+  const waypoints = tspLocations.points.slice(
+    1,
+    tspLocations.points.length - 1
+  );
+
+  const directions = await directionApi(
+    origin,
+    destination,
+    waypoints.map((point) => ({
+      lat: point.location[0],
+      lng: point.location[1],
+    }))
+  );
+
+  return directions;
 };

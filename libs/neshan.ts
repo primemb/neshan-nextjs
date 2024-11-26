@@ -1,9 +1,15 @@
 import {
   IAdrressToLocation,
+  IDirectionApiResponse,
   ILocationToAddress,
   ITSPApiParams,
+  ITSPApiResponse,
 } from "@/interfaces/api-responses.interface";
-import { IGetAddressFromLocationParams } from "@/interfaces/location.interface";
+import {
+  ICoordinate,
+  IGetAddressFromLocationParams,
+} from "@/interfaces/location.interface";
+import { makeWaypointsString } from "./util";
 
 export const geocodingToAddress = async ({
   lat,
@@ -39,11 +45,7 @@ export const tspApi = async ({
   waypoints,
   sourceIsAnyPoint,
 }: ITSPApiParams) => {
-  const waypointsString = waypoints
-    .map((waypoint) => {
-      return `${waypoint.lat},${waypoint.lng}`;
-    })
-    .join("|");
+  const waypointsString = makeWaypointsString(waypoints);
 
   const params = new URLSearchParams({
     waypoints: waypointsString,
@@ -59,5 +61,31 @@ export const tspApi = async ({
     }
   );
 
-  return await response.json();
+  return (await response.json()) as ITSPApiResponse;
+};
+
+export const directionApi = async (
+  origin: ICoordinate,
+  destination: ICoordinate,
+  waypoints: ICoordinate[]
+) => {
+  const waypointsString = makeWaypointsString(waypoints);
+
+  const params = new URLSearchParams({
+    origin: `${origin.lat},${origin.lng}`,
+    destination: `${destination.lat},${destination.lng}`,
+    waypoints: waypointsString,
+  });
+
+  const response = await fetch(
+    `${process.env.NESHAN_API_URL}v4/direction?${params.toString()}`,
+    {
+      headers: {
+        "Api-Key": process.env.NESHAN_API_KEY as string,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  return (await response.json()) as IDirectionApiResponse;
 };

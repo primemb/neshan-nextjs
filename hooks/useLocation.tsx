@@ -9,7 +9,6 @@ import {
 } from "@/actions/location.action";
 import { LocationWithAddress } from "@/interfaces/api-responses.interface";
 import { IGetAddressFromLocationParams } from "@/interfaces/location.interface";
-import { tspApi } from "@/libs/neshan";
 import { useCallback, useState } from "react";
 
 const useLocation = () => {
