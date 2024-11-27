@@ -9,6 +9,7 @@ import {
 } from "@/actions/location.action";
 import { LocationWithAddress } from "@/interfaces/api-responses.interface";
 import { IGetAddressFromLocationParams } from "@/interfaces/location.interface";
+import { makeRouteAndPoint } from "@/libs/util";
 import { useCallback, useState } from "react";
 
 const useLocation = () => {
@@ -45,7 +46,9 @@ const useLocation = () => {
 
   const drawDirection = useCallback(
     async (locations: { lat: number; lng: number }[]) => {
-      return drawLocationAction(locations);
+      const response = await drawLocationAction(locations);
+
+      return makeRouteAndPoint(response);
     },
     []
   );
