@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 
 import mapboxgl from "@neshan-maps-platform/mapbox-gl";
@@ -9,66 +9,35 @@ import ThemeSwitch from "./Themeswitch";
 import useLocation from "@/hooks/useLocation";
 import AddAddressInput from "./AddAddressInput";
 import { toast } from "react-toastify";
+import useMap from "@/hooks/useMap";
 
 const Map = () => {
+  const [mapContainer, setMapContainer] = useState<HTMLDivElement | null>(null);
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
-  const mapRef = useRef<mapboxgl.Map>();
-  const mapContainerRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<Record<number, mapboxgl.Marker>>({});
 
-  const {
-    locations,
-    getLocations,
-    addLocation,
-    addLocationFromAddress,
-    removeLocation,
-    drawDirection,
-  } = useLocation();
+  const { locations, addLocationFromAddress, drawDirection } = useLocation();
 
   const isDarkMode = theme === "dark";
+  const { removeMarker } = useMap({ isDarkMode, mapContainer });
 
   const addNewAddressHandler = async (address: string) => {
     const newLocation = await addLocationFromAddress(address);
     if ("error" in newLocation) {
       toast.error(newLocation.error);
     } else {
-      const newMarker = new mapboxgl.Marker()
-        .setLngLat([newLocation.longitude, newLocation.latitude])
-        .addTo(mapRef.current!);
-      markerRef.current[newLocation.id] = newMarker;
-      newMarker.getElement().addEventListener("click", (event) => {
-        event.stopPropagation();
-        newMarker.remove();
-        removeLocation(newLocation.id);
-      });
+      // const newMarker = new mapboxgl.Marker()
+      //   .setLngLat([newLocation.longitude, newLocation.latitude])
+      //   .addTo(mapRef.current!);
+      // markerRef.current[newLocation.id] = newMarker;
+      // newMarker.getElement().addEventListener("click", (event) => {
+      //   event.stopPropagation();
+      //   newMarker.remove();
+      //   removeLocation(newLocation.id);
+      // });
     }
   };
-
-  const handleMapClick = useCallback(
-    async (event: mapboxgl.MapMouseEvent & mapboxgl.EventData) => {
-      if (mapRef.current) {
-        // Get the clicked coordinates
-        const { lng, lat } = event.lngLat;
-        // Create a new marker
-        const newLocation = await addLocation({ lat, lng });
-        const newMarker = new mapboxgl.Marker()
-          .setLngLat([lng, lat])
-          .addTo(mapRef.current);
-
-        markerRef.current[newLocation.id] = newMarker;
-        newMarker.getElement().addEventListener("click", (event) => {
-          // Prevent map click event from firing
-          event.stopPropagation();
-          newMarker.remove();
-          removeLocation(newLocation.id);
-        });
-
-        // Update the state to include the new marker
-      }
-    },
-    [addLocation, removeLocation]
-  );
 
   const handleDirection = async () => {
     const { pointsObj, routeObj } = await drawDirection(
@@ -77,97 +46,46 @@ const Map = () => {
         lng: location.longitude,
       }))
     );
+    console.log(pointsObj, routeObj);
+    // if (mapRef.current) {
+    //   mapRef.current.addSource("route", {
+    //     type: "geojson",
+    //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //     data: routeObj as any,
+    //   });
+    //   mapRef.current.addSource("points1", {
+    //     type: "geojson",
+    //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //     data: pointsObj as any,
+    //   });
 
-    if (mapRef.current) {
-      mapRef.current.addSource("route", {
-        type: "geojson",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: routeObj as any,
-      });
-      mapRef.current.addSource("points1", {
-        type: "geojson",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: pointsObj as any,
-      });
+    //   mapRef.current.addLayer({
+    //     id: "route-line",
+    //     type: "line",
+    //     source: "route",
+    //     layout: {
+    //       "line-join": "round",
+    //       "line-cap": "round",
+    //     },
+    //     paint: {
+    //       "line-color": "#250ECD",
+    //       "line-width": 9,
+    //     },
+    //   });
 
-      mapRef.current.addLayer({
-        id: "route-line",
-        type: "line",
-        source: "route",
-        layout: {
-          "line-join": "round",
-          "line-cap": "round",
-        },
-        paint: {
-          "line-color": "#250ECD",
-          "line-width": 9,
-        },
-      });
-
-      mapRef.current.addLayer({
-        id: "points1",
-        type: "circle",
-        source: "points1",
-        paint: {
-          "circle-color": "#9fbef9",
-          "circle-stroke-color": "#FFFFFF",
-          "circle-stroke-width": 2,
-          "circle-radius": 5,
-        },
-      });
-    }
+    //   mapRef.current.addLayer({
+    //     id: "points1",
+    //     type: "circle",
+    //     source: "points1",
+    //     paint: {
+    //       "circle-color": "#9fbef9",
+    //       "circle-stroke-color": "#FFFFFF",
+    //       "circle-stroke-width": 2,
+    //       "circle-radius": 5,
+    //     },
+    //   });
+    // }
   };
-
-  useEffect(() => {
-    if (mapRef.current) {
-      for (const location of locations) {
-        if (!markerRef.current[location.id]) {
-          const mark = new mapboxgl.Marker()
-            .setLngLat([location.longitude, location.latitude])
-            .addTo(mapRef.current as mapboxgl.Map);
-
-          markerRef.current[location.id] = mark;
-          mark.getElement().addEventListener("click", (event) => {
-            // Prevent map click event from firing
-            event.stopPropagation();
-            mark.remove();
-            removeLocation(location.id);
-          });
-        }
-      }
-    }
-  }, [locations, mapRef, removeLocation]);
-
-  useEffect(() => {
-    const neshanMap = mapRef.current;
-    if (mapContainerRef.current) {
-      mapRef.current = new mapboxgl.Map({
-        container: mapContainerRef.current,
-        mapType: isDarkMode
-          ? mapboxgl.Map.mapTypes.neshanVectorNight
-          : mapboxgl.Map.mapTypes.neshanVector,
-        mapKey: process.env.NEXT_PUBLIC_NESHAN_MAP_KEY as string,
-        zoom: 11,
-        pitch: 0,
-        center: [51.389, 35.6892],
-        minZoom: 2,
-        maxZoom: 21,
-        trackResize: true,
-        poi: true,
-        traffic: false,
-
-        mapTypeControllerOptions: {
-          show: true,
-          position: "bottom-left",
-        },
-      }) as unknown as mapboxgl.Map;
-      mapRef.current.on("click", handleMapClick);
-      mapRef.current.on("load", () => {
-        getLocations();
-      });
-    }
-    return () => neshanMap?.remove();
-  }, [isDarkMode, mounted, handleMapClick, getLocations]);
 
   useEffect(() => setMounted(true), []);
 
@@ -216,10 +134,7 @@ const Map = () => {
                       </span>
                       <button
                         onClick={() => {
-                          if (markerRef.current[location.id]) {
-                            markerRef.current[location.id].remove();
-                          }
-                          removeLocation(location.id);
+                          removeMarker(location.id);
                         }}
                         className="text-red-500 hover:text-red-700 focus:outline-none"
                         title="Remove Marker"
@@ -236,7 +151,7 @@ const Map = () => {
         </div>
         {/* Map Container */}
         <div className="w-3/4">
-          <div ref={mapContainerRef} className="w-full h-full" />
+          <div ref={setMapContainer} className="w-full h-full" />
         </div>
       </div>
     </div>

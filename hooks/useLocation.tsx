@@ -1,5 +1,6 @@
 "use client";
 
+import React, { createContext, useContext, useState, useCallback } from "react";
 import {
   addLocationFromAddressAction,
   deleteLocationAction,
@@ -10,9 +11,33 @@ import {
 import { LocationWithAddress } from "@/interfaces/api-responses.interface";
 import { IGetAddressFromLocationParams } from "@/interfaces/location.interface";
 import { makeRouteAndPoint } from "@/libs/util";
-import { useCallback, useState } from "react";
 
-const useLocation = () => {
+// Define the shape of your context
+interface LocationContextType {
+  locations: LocationWithAddress[];
+  addLocation: (
+    params: IGetAddressFromLocationParams
+  ) => Promise<LocationWithAddress>;
+  addLocationFromAddress: (
+    address: string
+  ) => Promise<LocationWithAddress | { error: string }>;
+  removeLocation: (id: number) => Promise<void>;
+  getLocations: () => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  drawDirection: (locations: { lat: number; lng: number }[]) => Promise<any>;
+}
+
+// Create the context
+const LocationContext = createContext<LocationContextType | undefined>(
+  undefined
+);
+
+// Create the provider component
+export const LocationProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [locations, setLocations] = useState<LocationWithAddress[]>([]);
 
   const getLocations = useCallback(async () => {
@@ -47,20 +72,34 @@ const useLocation = () => {
   const drawDirection = useCallback(
     async (locations: { lat: number; lng: number }[]) => {
       const response = await drawLocationAction(locations);
-
       return makeRouteAndPoint(response);
     },
     []
   );
 
-  return {
-    locations,
-    addLocation,
-    addLocationFromAddress,
-    removeLocation,
-    getLocations,
-    drawDirection,
-  };
+  return (
+    <LocationContext.Provider
+      value={{
+        locations,
+        addLocation,
+        addLocationFromAddress,
+        removeLocation,
+        getLocations,
+        drawDirection,
+      }}
+    >
+      {children}
+    </LocationContext.Provider>
+  );
+};
+
+// Update the useLocation hook to use context
+const useLocation = () => {
+  const context = useContext(LocationContext);
+  if (context === undefined) {
+    throw new Error("useLocation must be used within a LocationProvider");
+  }
+  return context;
 };
 
 export default useLocation;

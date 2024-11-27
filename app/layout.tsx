@@ -1,5 +1,5 @@
 import localFont from "next/font/local";
-import { Providers } from "@/components/ThemeProvider";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 
