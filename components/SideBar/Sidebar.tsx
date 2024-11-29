@@ -45,8 +45,8 @@ const Sidebar = () => {
         </button>
       </div>
       <AddAddressInput />
-      <div className="flex flex-col h-full mb-2">
-        <div className="flex-grow overflow-y-auto w-full">
+      <div id="bad-height" className="flex flex-grow flex-col">
+        <div className="overflow-y-auto flex flex-grow w-full">
           {locations.length === 0 ? (
             <p className="text-gray-600 dark:text-gray-400">
               هیچ مکانی انتخاب نشده است
