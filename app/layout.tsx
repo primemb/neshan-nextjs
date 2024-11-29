@@ -1,7 +1,8 @@
 import localFont from "next/font/local";
 import { Providers } from "@/Providers/Providers";
-import "./globals.css";
 import "react-toastify/ReactToastify.min.css";
+import type { Viewport } from "next";
+import "./globals.css";
 
 const IranYekan = localFont({
   src: [
@@ -16,6 +17,14 @@ const IranYekan = localFont({
   ],
   variable: "--font-iran",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  height: "device-height",
+  initialScale: 1,
+  maximumScale: 1,
+  minimumScale: 1,
+};
 
 export default function RootLayout({
   children,

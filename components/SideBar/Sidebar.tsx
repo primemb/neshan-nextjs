@@ -33,7 +33,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="flex flex-col w-1/4 h-full p-4 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+    <>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">لیست آدرس ها</h2>
         <button
@@ -87,7 +87,7 @@ const Sidebar = () => {
           مسیر یابی
         </button>
       </div>
-    </div>
+    </>
   );
 };
 
