@@ -102,7 +102,7 @@ export const addLocationFromAddressAction = async (
 };
 
 export const directionInfoAction = async (
-  start: ICoordinate,
+  start: ICoordinate | null,
   locations: ICoordinate[]
 ) => {
   const tspLocations = await tspApi({
@@ -110,10 +110,18 @@ export const directionInfoAction = async (
     sourceIsAnyPoint: false,
   });
 
-  const origin = {
-    lat: start.lat,
-    lng: start.lng,
-  };
+  let origin: ICoordinate = { lat: 0, lng: 0 };
+  if (start) {
+    origin = {
+      lat: start.lat,
+      lng: start.lng,
+    };
+  } else {
+    origin = {
+      lat: tspLocations.points[0].location[0],
+      lng: tspLocations.points[0].location[1],
+    };
+  }
 
   const destination = {
     lat: tspLocations.points[tspLocations.points.length - 1].location[0],

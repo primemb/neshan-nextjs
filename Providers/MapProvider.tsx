@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
-import { toast } from "react-toastify";
 
 import useLocation from "@/hooks/useLocation";
 import { ICoordinate } from "@/interfaces/location.interface";
@@ -64,12 +63,15 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
   );
 
   const addDirection = useCallback(async () => {
-    if (!currentLocation) {
-      toast.error("امکان پیدا کردن موقعیت فعلی شما وجود ندارد");
-      return;
+    let startLocation: ICoordinate | null = null;
+    if (currentLocation) {
+      startLocation = {
+        lat: currentLocation.latitude,
+        lng: currentLocation.longitude,
+      };
     }
     const { pointsObj, routeObj } = await directionInfo(
-      { lat: currentLocation.latitude, lng: currentLocation.longitude },
+      startLocation,
       locations.map((location) => ({
         lat: location.latitude,
         lng: location.longitude,

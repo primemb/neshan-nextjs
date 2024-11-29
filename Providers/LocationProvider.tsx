@@ -53,7 +53,7 @@ export const LocationProvider = ({
   }, []);
 
   const directionInfo = useCallback(
-    async (start: ICoordinate, locations: ICoordinate[]) => {
+    async (start: ICoordinate | null, locations: ICoordinate[]) => {
       const response = await directionInfoAction(start, locations);
       return makeRouteAndPoint(response);
     },

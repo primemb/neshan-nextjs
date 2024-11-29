@@ -18,8 +18,11 @@ interface LocationContextType {
   ) => Promise<LocationWithAddress | { error: string }>;
   removeLocation: (id: number) => Promise<void>;
   getLocations: () => Promise<void>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  directionInfo: (start: ICoordinate, locations: ICoordinate[]) => Promise<any>;
+  directionInfo: (
+    start: ICoordinate | null,
+    locations: ICoordinate[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => Promise<any>;
 }
 
 // Create the context
