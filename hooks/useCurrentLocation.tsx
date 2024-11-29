@@ -15,9 +15,7 @@ interface UseCurrentLocationReturn {
   error: string | null;
 }
 
-export const useCurrentLocation = (
-  options: PositionOptions = {}
-): UseCurrentLocationReturn => {
+export const useCurrentLocation = (): UseCurrentLocationReturn => {
   const [location, setLocation] = useState<Coordinates | null>(null);
   const [error, setError] = useState<string | null>(null);
   const previousLocation = useRef<Coordinates | null>(null);
@@ -78,13 +76,17 @@ export const useCurrentLocation = (
     const watcherId = navigator.geolocation.watchPosition(
       handleSuccess,
       handleError,
-      options
+      {
+        enableHighAccuracy: true,
+        maximumAge: 1000,
+        timeout: 10000,
+      }
     );
 
     return () => {
       navigator.geolocation.clearWatch(watcherId);
     };
-  }, [options]);
+  }, []);
 
   useEffect(() => {
     if (error) {
