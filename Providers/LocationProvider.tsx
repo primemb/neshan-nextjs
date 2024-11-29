@@ -9,7 +9,10 @@ import {
 } from "@/actions/location.action";
 import { LocationContext } from "@/context/LocationContext";
 import { LocationWithAddress } from "@/interfaces/api-responses.interface";
-import { IGetAddressFromLocationParams } from "@/interfaces/location.interface";
+import {
+  ICoordinate,
+  IGetAddressFromLocationParams,
+} from "@/interfaces/location.interface";
 import { makeRouteAndPoint } from "@/libs/util";
 import { useCallback, useState } from "react";
 
@@ -50,8 +53,8 @@ export const LocationProvider = ({
   }, []);
 
   const directionInfo = useCallback(
-    async (locations: { lat: number; lng: number }[]) => {
-      const response = await directionInfoAction(locations);
+    async (start: ICoordinate, locations: ICoordinate[]) => {
+      const response = await directionInfoAction(start, locations);
       return makeRouteAndPoint(response);
     },
     []

@@ -2,7 +2,10 @@
 
 import { createContext } from "react";
 import { LocationWithAddress } from "@/interfaces/api-responses.interface";
-import { IGetAddressFromLocationParams } from "@/interfaces/location.interface";
+import {
+  ICoordinate,
+  IGetAddressFromLocationParams,
+} from "@/interfaces/location.interface";
 
 // Define the shape of your context
 interface LocationContextType {
@@ -16,7 +19,7 @@ interface LocationContextType {
   removeLocation: (id: number) => Promise<void>;
   getLocations: () => Promise<void>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  directionInfo: (locations: { lat: number; lng: number }[]) => Promise<any>;
+  directionInfo: (start: ICoordinate, locations: ICoordinate[]) => Promise<any>;
 }
 
 // Create the context

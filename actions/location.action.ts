@@ -2,7 +2,10 @@
 "use server";
 
 import { LocationWithAddress } from "@/interfaces/api-responses.interface";
-import { IGetAddressFromLocationParams } from "@/interfaces/location.interface";
+import {
+  ICoordinate,
+  IGetAddressFromLocationParams,
+} from "@/interfaces/location.interface";
 import {
   addressToGeocoding,
   directionApi,
@@ -99,7 +102,8 @@ export const addLocationFromAddressAction = async (
 };
 
 export const directionInfoAction = async (
-  locations: { lat: number; lng: number }[]
+  start: ICoordinate,
+  locations: ICoordinate[]
 ) => {
   const tspLocations = await tspApi({
     waypoints: locations,
@@ -107,8 +111,8 @@ export const directionInfoAction = async (
   });
 
   const origin = {
-    lat: tspLocations.points[0].location[0],
-    lng: tspLocations.points[0].location[1],
+    lat: start.lat,
+    lng: start.lng,
   };
 
   const destination = {

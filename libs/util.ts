@@ -60,3 +60,16 @@ export const makeRouteAndPoint = (data: IDirectionApiResponse) => {
 
   return { routeObj, pointsObj };
 };
+
+export const createCustomMarker = () => {
+  const customMarker = document.createElement("div");
+
+  customMarker.className = "custom-marker";
+  customMarker.style.width = "20px";
+  customMarker.style.height = "20px";
+  customMarker.style.backgroundColor = "#FF0000"; // Custom color
+  customMarker.style.borderRadius = "50%"; // Make it a circle
+  customMarker.style.border = "2px solid #FFFFFF"; // Optional: Add a white border
+
+  return customMarker;
+};

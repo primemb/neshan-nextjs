@@ -5,6 +5,9 @@ import { ICoordinate } from "@/interfaces/location.interface";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MapContext } from "@/context/MapContext";
+import { useCurrentLocation } from "@/hooks/useCurrentLocation";
+import { createCustomMarker } from "@/libs/util";
+import { toast } from "react-toastify";
 
 interface IMapProviderProps {
   children: React.ReactNode;
@@ -14,6 +17,7 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
   const [mapboxglModule, setMapboxglModule] = useState<
     typeof import("@neshan-maps-platform/mapbox-gl") | null
   >(null);
+
   const {
     locations,
     getLocations,
@@ -21,11 +25,15 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
     removeLocation,
     directionInfo,
   } = useLocation();
+
+  const { location: currentLocation } = useCurrentLocation();
+
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
   const [mapContainer, setMapContainer] = useState<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map>();
   const markerRef = useRef<Record<number, mapboxgl.Marker>>({});
+  const currentLocationMarkerRef = useRef<mapboxgl.Marker>();
 
   useEffect(() => {
     if (mapboxglModule) return;
@@ -54,7 +62,12 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
   );
 
   const addDirection = useCallback(async () => {
+    if (!currentLocation) {
+      toast.error("امکان پیدا کردن موقعیت فعلی شما وجود ندارد");
+      return;
+    }
     const { pointsObj, routeObj } = await directionInfo(
+      { lat: currentLocation.latitude, lng: currentLocation.longitude },
       locations.map((location) => ({
         lat: location.latitude,
         lng: location.longitude,
@@ -187,6 +200,28 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
       });
     }
   }, [locations, addMarker]);
+
+  useEffect(() => {
+    if (mapRef.current && currentLocation) {
+      if (currentLocationMarkerRef.current) {
+        currentLocationMarkerRef.current.setLngLat([
+          currentLocation.longitude,
+          currentLocation.latitude,
+        ]);
+      } else {
+        const customMark = createCustomMarker();
+        currentLocationMarkerRef.current = new mapboxglModule!.Marker(
+          customMark
+        )
+          .setLngLat([currentLocation.longitude, currentLocation.latitude])
+          .addTo(mapRef.current);
+      }
+      mapRef.current?.jumpTo({
+        center: [currentLocation.longitude, currentLocation?.latitude],
+        zoom: 15,
+      });
+    }
+  }, [currentLocation, mapRef, mapboxglModule]);
 
   const removeAllMarkers = useCallback(() => {
     Object.values(markerRef.current).forEach((marker) => marker.remove());
