@@ -1,17 +1,15 @@
 "use client";
+import useLocation from "@/hooks/useLocation";
 import { useState } from "react";
 
-interface IAddressInputProps {
-  onSumbit: (address: string) => Promise<void>;
-}
-
-const AddAddressInput = ({ onSumbit }: IAddressInputProps) => {
+const AddAddressInput = () => {
+  const { addLocationFromAddress } = useLocation();
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     setLoading(true);
-    await onSumbit(address);
+    await addLocationFromAddress(address);
     setAddress("");
     setLoading(false);
   };

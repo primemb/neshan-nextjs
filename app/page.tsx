@@ -1,10 +1,13 @@
-"use client";
-import dynamic from "next/dynamic";
-const DynamicMap = dynamic(() => import("@/components/Map"), {
-  loading: () => <p>Loading...</p>,
-  ssr: false,
-});
+import Map from "@/components/Map";
+import Sidebar from "@/components/SideBar/Sidebar";
 
 export default function Home() {
-  return <DynamicMap />;
+  return (
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+      <Sidebar />
+      <div className="w-3/4">
+        <Map />
+      </div>
+    </div>
+  );
 }

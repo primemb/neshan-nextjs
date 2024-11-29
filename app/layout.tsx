@@ -1,7 +1,7 @@
 import localFont from "next/font/local";
-import { Providers } from "@/components/Providers";
+import { Providers } from "@/Providers/Providers";
 import "./globals.css";
-import "react-toastify/dist/ReactToastify.css";
+import "react-toastify/ReactToastify.min.css";
 
 const IranYekan = localFont({
   src: [
