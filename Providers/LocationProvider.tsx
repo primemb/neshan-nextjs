@@ -3,7 +3,7 @@
 import {
   addLocationFromAddressAction,
   deleteLocationAction,
-  drawLocationAction,
+  directionInfoAction,
   getAllLocationsAction,
   saveNewlocationAction,
 } from "@/actions/location.action";
@@ -49,9 +49,9 @@ export const LocationProvider = ({
     await deleteLocationAction(id);
   }, []);
 
-  const drawDirection = useCallback(
+  const directionInfo = useCallback(
     async (locations: { lat: number; lng: number }[]) => {
-      const response = await drawLocationAction(locations);
+      const response = await directionInfoAction(locations);
       return makeRouteAndPoint(response);
     },
     []
@@ -65,7 +65,7 @@ export const LocationProvider = ({
         addLocationFromAddress,
         removeLocation,
         getLocations,
-        drawDirection,
+        directionInfo,
       }}
     >
       {children}

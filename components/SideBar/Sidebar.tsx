@@ -8,7 +8,7 @@ import { useTheme } from "next-themes";
 
 const Sidebar = () => {
   const { locations } = useLocation();
-  const { removeMarker } = useMap();
+  const { removeMarker, addDirection } = useMap();
 
   const { theme, setTheme } = useTheme();
   const isDarkMode = theme === "dark";
@@ -61,7 +61,12 @@ const Sidebar = () => {
           })}
         </ul>
       )}
-      <button onClick={() => {}}>Test</button>
+      <button
+        className="w-full p-2 mt-4 bg-blue-500 text-white rounded focus:outline"
+        onClick={addDirection}
+      >
+        مسیر یابی
+      </button>
     </div>
   );
 };

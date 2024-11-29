@@ -2,7 +2,6 @@
 
 import { ICoordinate } from "@/interfaces/location.interface";
 import { createContext } from "react";
-import mapboxgl from "@neshan-maps-platform/mapbox-gl";
 
 interface IMapContext {
   mapRef: React.MutableRefObject<mapboxgl.Map | undefined>;
@@ -11,6 +10,7 @@ interface IMapContext {
   removeMarker: (id: number) => void;
   removeAllMarkers: () => void;
   setMapContainer: (container: HTMLDivElement | null) => void;
+  addDirection: () => void;
   destroy: () => void;
 }
 

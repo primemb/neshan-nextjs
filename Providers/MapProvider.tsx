@@ -14,8 +14,13 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
   const [mapboxglModule, setMapboxglModule] = useState<
     typeof import("@neshan-maps-platform/mapbox-gl") | null
   >(null);
-  const { locations, getLocations, addLocation, removeLocation } =
-    useLocation();
+  const {
+    locations,
+    getLocations,
+    addLocation,
+    removeLocation,
+    directionInfo,
+  } = useLocation();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
   const [mapContainer, setMapContainer] = useState<HTMLDivElement | null>(null);
@@ -47,6 +52,65 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
     },
     [removeLocation]
   );
+
+  const addDirection = useCallback(async () => {
+    const { pointsObj, routeObj } = await directionInfo(
+      locations.map((location) => ({
+        lat: location.latitude,
+        lng: location.longitude,
+      }))
+    );
+
+    if (mapRef.current) {
+      if (mapRef.current.getLayer("route-line")) {
+        mapRef.current.removeLayer("route-line");
+        mapRef.current.removeSource("route");
+      }
+
+      if (mapRef.current.getLayer("points1")) {
+        mapRef.current.removeLayer("points1");
+        mapRef.current.removeSource("points1");
+      }
+
+      mapRef.current.addSource("route", {
+        type: "geojson",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: routeObj as any,
+      });
+
+      mapRef.current.addSource("points1", {
+        type: "geojson",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: pointsObj as any,
+      });
+
+      mapRef.current.addLayer({
+        id: "route-line",
+        type: "line",
+        source: "route",
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+        paint: {
+          "line-color": "#250ECD",
+          "line-width": 9,
+        },
+      });
+
+      mapRef.current.addLayer({
+        id: "points1",
+        type: "circle",
+        source: "points1",
+        paint: {
+          "circle-color": "#9fbef9",
+          "circle-stroke-color": "#FFFFFF",
+          "circle-stroke-width": 2,
+          "circle-radius": 5,
+        },
+      });
+    }
+  }, [locations, directionInfo]);
 
   const addMarker = useCallback(
     ({ lat, lng }: ICoordinate, id: number) => {
@@ -139,6 +203,7 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
         removeAllMarkers,
         destroy,
         setMapContainer,
+        addDirection,
       }}
     >
       {children}

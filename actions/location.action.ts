@@ -98,7 +98,7 @@ export const addLocationFromAddressAction = async (
   }
 };
 
-export const drawLocationAction = async (
+export const directionInfoAction = async (
   locations: { lat: number; lng: number }[]
 ) => {
   const tspLocations = await tspApi({

@@ -16,7 +16,7 @@ interface LocationContextType {
   removeLocation: (id: number) => Promise<void>;
   getLocations: () => Promise<void>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  drawDirection: (locations: { lat: number; lng: number }[]) => Promise<any>;
+  directionInfo: (locations: { lat: number; lng: number }[]) => Promise<any>;
 }
 
 // Create the context
