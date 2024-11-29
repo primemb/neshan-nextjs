@@ -1,13 +1,14 @@
 "use client";
 
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTheme } from "next-themes";
+import { toast } from "react-toastify";
+
 import useLocation from "@/hooks/useLocation";
 import { ICoordinate } from "@/interfaces/location.interface";
-import { useTheme } from "next-themes";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { MapContext } from "@/context/MapContext";
 import { useCurrentLocation } from "@/hooks/useCurrentLocation";
 import { createCustomMarker } from "@/libs/util";
-import { toast } from "react-toastify";
 
 interface IMapProviderProps {
   children: React.ReactNode;
@@ -48,6 +49,7 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
       mapRef.current = undefined;
     }
     markerRef.current = {};
+    currentLocationMarkerRef.current = undefined;
   }, []);
 
   const removeMarker = useCallback(
@@ -123,7 +125,7 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
         },
       });
     }
-  }, [locations, directionInfo]);
+  }, [locations, directionInfo, currentLocation]);
 
   const addMarker = useCallback(
     ({ lat, lng }: ICoordinate, id: number) => {
@@ -201,6 +203,20 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
     }
   }, [locations, addMarker]);
 
+  const addCurrentLocationMarker = useCallback(() => {
+    if (currentLocation && mapRef.current) {
+      const customMark = createCustomMarker();
+      currentLocationMarkerRef.current = new mapboxglModule!.Marker(customMark)
+        .setLngLat([currentLocation.longitude, currentLocation.latitude])
+        .addTo(mapRef.current);
+
+      mapRef.current.jumpTo({
+        center: [currentLocation.longitude, currentLocation.latitude],
+        zoom: 11,
+      });
+    }
+  }, [currentLocation, mapRef, mapboxglModule]);
+
   useEffect(() => {
     if (mapRef.current && currentLocation) {
       if (currentLocationMarkerRef.current) {
@@ -209,19 +225,20 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
           currentLocation.latitude,
         ]);
       } else {
-        const customMark = createCustomMarker();
-        currentLocationMarkerRef.current = new mapboxglModule!.Marker(
-          customMark
-        )
-          .setLngLat([currentLocation.longitude, currentLocation.latitude])
-          .addTo(mapRef.current);
+        addCurrentLocationMarker();
       }
-      mapRef.current?.jumpTo({
-        center: [currentLocation.longitude, currentLocation?.latitude],
-        zoom: 15,
+    }
+  }, [currentLocation, mapRef, addCurrentLocationMarker]);
+
+  useEffect(() => {
+    if (mapRef.current && mapboxglModule && currentLocation) {
+      addCurrentLocationMarker();
+      mapRef.current.jumpTo({
+        center: [currentLocation.longitude, currentLocation.latitude],
+        zoom: 11,
       });
     }
-  }, [currentLocation, mapRef, mapboxglModule]);
+  }, [isDarkMode, mapboxglModule, currentLocation, addCurrentLocationMarker]);
 
   const removeAllMarkers = useCallback(() => {
     Object.values(markerRef.current).forEach((marker) => marker.remove());

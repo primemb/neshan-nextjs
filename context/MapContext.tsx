@@ -10,7 +10,7 @@ interface IMapContext {
   removeMarker: (id: number) => void;
   removeAllMarkers: () => void;
   setMapContainer: (container: HTMLDivElement | null) => void;
-  addDirection: () => void;
+  addDirection: () => Promise<void>;
   destroy: () => void;
 }
 

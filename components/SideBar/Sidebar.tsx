@@ -1,12 +1,15 @@
 "use client";
+import { useTheme } from "next-themes";
+import { useState } from "react";
 
 import useLocation from "@/hooks/useLocation";
 import { useMap } from "@/hooks/useMap";
-import ThemeSwitch from "../Themeswitch";
 import AddAddressInput from "./AddAddressInput";
-import { useTheme } from "next-themes";
+import ThemeSwitch from "../Themeswitch";
+import { toast } from "react-toastify";
 
 const Sidebar = () => {
+  const [loadingDirections, setLoadingDirections] = useState(false);
   const { locations } = useLocation();
   const { removeMarker, addDirection } = useMap();
 
@@ -15,6 +18,18 @@ const Sidebar = () => {
 
   const toggleDarkMode = () => {
     setTheme(isDarkMode ? "light" : "dark");
+  };
+
+  const handleAddDirection = async () => {
+    try {
+      setLoadingDirections(true);
+      await addDirection();
+    } catch (error) {
+      console.log(error);
+      toast.error("مشکلی پیش آمد مجدد امتحان کنید");
+    } finally {
+      setLoadingDirections(false);
+    }
   };
 
   return (
@@ -65,8 +80,9 @@ const Sidebar = () => {
           )}
         </div>
         <button
-          className="w-full p-2 mt-4 bg-blue-500 text-white rounded focus:outline"
-          onClick={addDirection}
+          disabled={loadingDirections}
+          className="w-full p-2 mt-4 bg-blue-500 text-white rounded focus:outline disabled:opacity-50"
+          onClick={handleAddDirection}
         >
           مسیر یابی
         </button>

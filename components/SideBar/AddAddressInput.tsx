@@ -1,6 +1,7 @@
 "use client";
 import useLocation from "@/hooks/useLocation";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 const AddAddressInput = () => {
   const { addLocationFromAddress } = useLocation();
@@ -8,10 +9,20 @@ const AddAddressInput = () => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    setLoading(true);
-    await addLocationFromAddress(address);
-    setAddress("");
-    setLoading(false);
+    try {
+      setLoading(true);
+      const response = await addLocationFromAddress(address);
+      if ("error" in response) {
+        toast.error("مشکلی پیش آمد مجدد امتحان کنید");
+      } else {
+        setAddress("");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("مشکلی پیش آمد مجدد امتحان کنید");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

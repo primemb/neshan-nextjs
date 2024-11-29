@@ -14,9 +14,9 @@ export const makeRouteAndPoint = (data: IDirectionApiResponse) => {
   const routes = [];
   const points = [];
 
-  for (let k = 0; k < data.routes.length; k++) {
-    for (let j = 0; j < data.routes[k].legs.length; j++) {
-      for (let i = 0; i < data.routes[k].legs[j].steps.length; i++) {
+  for (let k = 0; k < data.routes?.length; k++) {
+    for (let j = 0; j < data.routes[k].legs?.length; j++) {
+      for (let i = 0; i < data.routes[k].legs[j].steps?.length; i++) {
         const step = data.routes[k].legs[j].steps[i].polyline;
         const point = data.routes[k].legs[j].steps[i].start_location;
 
