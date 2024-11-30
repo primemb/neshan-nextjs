@@ -32,6 +32,7 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
   const isDarkMode = theme === "dark";
   const [mapContainer, setMapContainer] = useState<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map>();
+  const [mapRefState, setMapRefState] = useState<mapboxgl.Map>();
   const markerRef = useRef<Record<number, mapboxgl.Marker>>({});
   const currentLocationMarkerRef = useRef<mapboxgl.Marker>();
 
@@ -47,6 +48,7 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
       mapRef.current.remove();
       mapRef.current = undefined;
     }
+    setMapRefState(undefined);
     markerRef.current = {};
     currentLocationMarkerRef.current = undefined;
   }, []);
@@ -153,7 +155,7 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
     if (!mapContainer) return;
     if (!mapboxglModule) return;
 
-    mapRef.current = new mapboxglModule.Map({
+    const newMap = new mapboxglModule.Map({
       container: mapContainer,
       mapType: isDarkMode
         ? mapboxglModule.Map.mapTypes.neshanVectorNight
@@ -173,24 +175,35 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
       },
     }) as unknown as mapboxgl.Map;
 
-    mapRef.current.on("click", async (e) => {
-      const { lng, lat } = e.lngLat;
-      await addLocation({ lat, lng });
-    });
+    mapRef.current = newMap;
+
+    setMapRefState(newMap);
 
     mapRef.current.on("load", () => {
       getLocations();
     });
 
     return () => destroy();
-  }, [
-    mapContainer,
-    mapboxglModule,
-    isDarkMode,
-    destroy,
-    addLocation,
-    getLocations,
-  ]);
+  }, [mapContainer, mapboxglModule, isDarkMode, destroy, getLocations]);
+
+  useEffect(() => {
+    const handleClick = async (
+      e: mapboxgl.MapMouseEvent & mapboxgl.EventData
+    ) => {
+      const { lng, lat } = e.lngLat;
+      await addLocation({ lat, lng });
+    };
+
+    if (mapRefState) {
+      mapRefState.on("click", handleClick);
+    }
+
+    return () => {
+      if (mapRefState) {
+        mapRefState.off("click", handleClick);
+      }
+    };
+  }, [mapRefState, addLocation]);
 
   useEffect(() => {
     if (mapRef.current) {
@@ -222,7 +235,7 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
         zoom: 11,
       });
     }
-  }, [currentLocation, mapRef, mapboxglModule]);
+  }, [currentLocation, mapboxglModule]);
 
   useEffect(() => {
     addCurrentLocationMarker();
