@@ -8,6 +8,7 @@ import { ICoordinate } from "@/interfaces/location.interface";
 import { MapContext } from "@/context/MapContext";
 import { useCurrentLocation } from "@/hooks/useCurrentLocation";
 import { createCustomMarker } from "@/libs/util";
+import { toast } from "react-toastify";
 
 interface IMapProviderProps {
   children: React.ReactNode;
@@ -69,6 +70,10 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
   );
 
   const addDirection = useCallback(async () => {
+    if (locations.length < 3) {
+      toast.error("نقاط بیشتری بر روی نقشه انتخاب کنید");
+      return;
+    }
     let startLocation: ICoordinate | null = null;
     if (currentLocation) {
       startLocation = {
