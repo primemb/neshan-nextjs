@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use server";
 
+import { revalidateTag, unstable_cache } from "next/cache";
 import { LocationWithAddress } from "@/interfaces/api-responses.interface";
 import {
   ICoordinate,
@@ -46,24 +47,31 @@ export const saveNewlocationAction = async ({
         address: true,
       },
     });
+    revalidateTag("locations");
     return location;
   } catch (error) {
     throw new Error("Error while saving location");
   }
 };
 
-export const getAllLocationsAction = async () => {
-  try {
-    const locations: LocationWithAddress[] = await prisma.location.findMany({
-      include: {
-        address: true,
-      },
-    });
-    return locations;
-  } catch (error) {
-    throw new Error("Error while fetching locations");
+export const getAllLocationsAction = unstable_cache(
+  async () => {
+    try {
+      const locations: LocationWithAddress[] = await prisma.location.findMany({
+        include: {
+          address: true,
+        },
+      });
+      return locations;
+    } catch (error) {
+      throw new Error("Error while fetching locations");
+    }
+  },
+  ["locations"],
+  {
+    tags: ["locations"],
   }
-};
+);
 
 export const deleteLocationAction = async (id: number) => {
   try {
@@ -84,6 +92,7 @@ export const deleteLocationAction = async (id: number) => {
         },
       }),
     ]);
+    revalidateTag("locations");
   } catch (error) {
     console.log(error);
     throw new Error("Error while deleting location");
