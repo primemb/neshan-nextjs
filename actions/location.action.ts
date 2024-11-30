@@ -67,13 +67,23 @@ export const getAllLocationsAction = async () => {
 
 export const deleteLocationAction = async (id: number) => {
   try {
-    const exist = await prisma.location.findUnique({ where: { id } });
-    if (!exist) return;
-    await prisma.location.delete({
-      where: {
-        id,
-      },
+    const exist = await prisma.location.findUnique({
+      where: { id },
+      include: { address: true },
     });
+    if (!exist) return;
+    await prisma.$transaction([
+      prisma.location.delete({
+        where: {
+          id,
+        },
+      }),
+      prisma.address.deleteMany({
+        where: {
+          id: exist.address?.id,
+        },
+      }),
+    ]);
   } catch (error) {
     console.log(error);
     throw new Error("Error while deleting location");
