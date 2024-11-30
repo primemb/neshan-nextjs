@@ -1,10 +1,13 @@
 "use client";
-import Map from "@/components/Map";
-import Sidebar from "@/components/SideBar/Sidebar";
-import { useMediaQuery } from "react-responsive";
+
 import { useEffect, useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion"; // Import from framer-motion
+import { motion, AnimatePresence } from "framer-motion";
+
+import Map from "@/components/Map/Map";
+import Sidebar from "@/components/SideBar/Sidebar";
+import { useMediaQuery } from "react-responsive";
+import CurrentLocationButton from "@/components/Map/CurrentLocationButton";
 
 export default function Home() {
   const [mounted, setIsMounted] = useState(false);
@@ -67,8 +70,9 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <div className="w-full lg:w-3/4">
+      <div className="relative w-full lg:w-3/4">
         <Map />
+        <CurrentLocationButton />
       </div>
     </div>
   );

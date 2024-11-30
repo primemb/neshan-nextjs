@@ -26,7 +26,11 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
     directionInfo,
   } = useLocation();
 
-  const { location: currentLocation } = useCurrentLocation();
+  const {
+    location: currentLocation,
+    setManualLocation: setCurrentLocationManual,
+    isLoading: isCurrentLocationLoading,
+  } = useCurrentLocation();
 
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
@@ -191,7 +195,15 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
       e: mapboxgl.MapMouseEvent & mapboxgl.EventData
     ) => {
       const { lng, lat } = e.lngLat;
-      await addLocation({ lat, lng });
+      if (isCurrentLocationLoading) {
+        setCurrentLocationManual({
+          latitude: lat,
+          longitude: lng,
+          accuracy: 0,
+        });
+      } else {
+        await addLocation({ lat, lng });
+      }
     };
 
     if (mapRefState) {
@@ -203,7 +215,12 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
         mapRefState.off("click", handleClick);
       }
     };
-  }, [mapRefState, addLocation]);
+  }, [
+    mapRefState,
+    isCurrentLocationLoading,
+    setCurrentLocationManual,
+    addLocation,
+  ]);
 
   useEffect(() => {
     if (mapRef.current) {
@@ -232,7 +249,6 @@ export const MapProvider = ({ children }: IMapProviderProps) => {
 
       mapRef.current.jumpTo({
         center: [currentLocation.longitude, currentLocation.latitude],
-        zoom: 11,
       });
     }
   }, [currentLocation, mapboxglModule]);

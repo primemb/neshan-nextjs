@@ -25,7 +25,6 @@ interface LocationContextType {
   ) => Promise<any>;
 }
 
-// Create the context
 export const LocationContext = createContext<LocationContextType | undefined>(
   undefined
 );
