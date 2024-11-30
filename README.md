@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Project Setup and Development Guide
 
-## Getting Started
+## Overview
 
-First, run the development server:
+This is a [Next.js](https://nextjs.org/) project bootstrapped with `create-next-app`, designed to provide a robust web application framework with modern development practices.
+
+## Prerequisites
+
+Before getting started, ensure you have the following installed:
+
+- Node.js (recommended version: 18.x or later)
+- npm, Yarn, pnpm, or Bun package manager
+- Git
+- A code editor (VS Code, WebStorm, etc.)
+
+## Project Configuration
+
+### Environment Setup
+
+1. Create a `.env` file in the project root directory
+2. Copy the contents from `.env.example`
+3. Fill in the necessary environment variables with your specific configuration
+
+   ```bash
+   # Example configuration
+   NEXT_PUBLIC_NESHAN_MAP_KEY=web.******
+   NESHAN_API_KEY=service.******
+   DATABASE_URL="postgres://*****"
+   ```
+
+### Database Migrations
+
+Initialize or update the database schema:
 
 ```bash
+npx prisma db push
+```
+
+This command applies any pending database schema changes defined in your Prisma schema.
+
+## Development Workflow
+
+### Running the Development Server
+
+Start the development server using your preferred package manager:
+
+```bash
+# npm
 npm run dev
-# or
+
+# Yarn
 yarn dev
-# or
+
+# pnpm
 pnpm dev
-# or
+
+# Bun
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Accessing the Application
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Once the server is running, open [http://localhost:3000](http://localhost:3000) in your web browser.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Additional Development Commands
 
-## Learn More
+- `npm run build`: Create a production build
+- `npm run start`: Start the production server
+- `npm run lint`: Run ESLint to check code quality
+- `npx prisma studio`: Open Prisma Studio for database management
 
-To learn more about Next.js, take a look at the following resources:
+## Best Practices
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Always work on a feature branch
+- Keep `.env` files out of version control
+- Regularly update dependencies
+- Use TypeScript for type safety
+- Follow consistent code formatting
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Troubleshooting
 
-## Deploy on Vercel
+- Ensure all environment variables are correctly set
+- Verify database connection strings
+- Check Node.js and package manager versions
+- Clear npm/yarn cache if experiencing dependency issues
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+[Insert your project's license information]
